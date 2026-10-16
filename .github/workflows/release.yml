@@ -1,0 +1,42 @@
+name: Release Package
+
+on:
+  push:
+    tags:
+      - 'v*'            # roda quando existir uma tag tipo v1.0.0
+  workflow_dispatch:     # permite rodar pelo botão na aba Actions
+    inputs:
+      tag:
+        description: 'Versão da release (ex: v1.0.0)'
+        required: true
+        default: 'v1.0.0'
+
+permissions:
+  contents: write        # necessário pra criar a release
+
+jobs:
+  release-package:
+    name: Criar pacote ZIP e Release
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ inputs.tag || github.ref_name }}
+    steps:
+      - name: Baixar o repositório
+        uses: actions/checkout@v4
+
+      - name: Criar o ZIP do projeto
+        run: |
+          zip -r "release-${VERSION}.zip" . -x ".git/*" ".github/*"
+
+      - name: Guardar o ZIP como artefato
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-package
+          path: release-${{ env.VERSION }}.zip
+
+      - name: Publicar Release no GitHub
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.VERSION }}
+          files: release-${{ env.VERSION }}.zip
+          generate_release_notes: true
