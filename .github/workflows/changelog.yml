@@ -7,11 +7,11 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write      # necessário pro bot commitar o CHANGELOG.md
+  contents: write
 
 jobs:
   changelog:
-    name: Atualizar CHANGELOG.md
+    name: Atualizar changelog no README.md
     runs-on: ubuntu-latest
     steps:
       - name: Baixar o repositório (histórico completo)
@@ -19,31 +19,46 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Gerar CHANGELOG.md
+      - name: Gerar lista de commits
         run: |
-          {
-            echo "# Changelog"
-            echo ""
-            echo "## Histórico de alterações"
-            echo ""
-            git log \
-              --invert-grep --grep='docs: update changelog' \
-              --pretty=format:'- %ad — %s (%h)' \
-              --date=short
-            echo ""
-          } > CHANGELOG.md
+          git log \
+            --invert-grep --grep='docs: update changelog' \
+            --pretty=format:'- %ad — %s (%h)' \
+            --date=short > /tmp/changelog.txt
 
           echo "===== CHANGELOG ====="
-          cat CHANGELOG.md
-          cat CHANGELOG.md >> "$GITHUB_STEP_SUMMARY"
+          cat /tmp/changelog.txt
 
-      - name: Commitar o CHANGELOG.md de volta no repositório
+      - name: Escrever o changelog no README.md
+        run: |
+          python3 - <<'EOF'
+          import re
+
+          start = "<!-- CHANGELOG:START -->"
+          end = "<!-- CHANGELOG:END -->"
+
+          with open("README.md", encoding="utf-8") as f:
+              readme = f.read()
+          with open("/tmp/changelog.txt", encoding="utf-8") as f:
+              changelog = f.read().strip()
+
+          block = start + "\n" + changelog + "\n" + end
+          pattern = re.compile(re.escape(start) + r".*?" + re.escape(end), re.DOTALL)
+
+          if not pattern.search(readme):
+              raise SystemExit("Marcadores do changelog não encontrados no README.md")
+
+          with open("README.md", "w", encoding="utf-8") as f:
+              f.write(pattern.sub(lambda m: block, readme))
+          EOF
+
+      - name: Commitar o README.md atualizado
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add CHANGELOG.md
+          git add README.md
           if git diff --cached --quiet; then
-            echo "Nada mudou no changelog, sem commit."
+            echo "Nada mudou no README, sem commit."
           else
             git commit -m "docs: update changelog [skip ci]"
             git push
