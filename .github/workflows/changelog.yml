@@ -21,13 +21,13 @@ jobs:
 
       - name: Gerar lista de commits
        # pipe permite escrever comandos em várias linhas
-        run: | 
-          git log \ 
-            --invert-grep --grep='docs: update changelog' \  
+        run: |
+          git log \
+            --invert-grep --grep='docs: update changelog' \
             --pretty=format:'- %ad — %s (%h)' \
-            --date=short > /tmp/changelog.txt 
+            --date=short > /tmp/changelog.txt
           echo "===== CHANGELOG ====="
-          cat /tmp/changelog.txt 
+          cat /tmp/changelog.txt
 
       - name: Escrever o changelog no README.md
         run: |
