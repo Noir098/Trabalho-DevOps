@@ -20,8 +20,10 @@ jobs:
           fetch-depth: 0
 
       - name: Gerar lista de commits
-        run: | # pipe permite escrever comandos em várias linhas!
-          git log \  # mostrar o historico de commits do repositório!
+       # pipe permite escrever comandos em várias linhas
+        run: | 
+          git log \ 
+          # mostrar o historico de commits do repositório!
             --invert-grep --grep='docs: update changelog' \ #  Inverte o filtro. Ou seja, ele diz ao Git: "Traga todos os commits exceto aqueles que contêm a mensagem 'docs: update changelog'". Isso evita que commits automáticos de atualização de changelog poluam o próprio changelog. 
             --pretty=format:'- %ad — %s (%h)' \ # % ad: Data do commit (Author Date),%s: A mensagem (título) do commit,%h: O hash curto do commit
             --date=short > /tmp/changelog.txt # --date=short: Formata a data para um padrão curto e limpo (ex: AAAA-MM-DD). O operador > pega todo o resultado gerado pelo git log e salva em um arquivo de texto temporário
