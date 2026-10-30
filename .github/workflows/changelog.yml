@@ -20,30 +20,30 @@ jobs:
           fetch-depth: 0
 
       - name: Gerar lista de commits
-        run: |
-          git log \
-            --invert-grep --grep='docs: update changelog' \
-            --pretty=format:'- %ad — %s (%h)' \
-            --date=short > /tmp/changelog.txt
+        run: | # pipe permite escrever comandos em várias linhas!
+          git log \  # mostrar o historico de commits do repositório!
+            --invert-grep --grep='docs: update changelog' \ #  Inverte o filtro. Ou seja, ele diz ao Git: "Traga todos os commits exceto aqueles que contêm a mensagem 'docs: update changelog'". Isso evita que commits automáticos de atualização de changelog poluam o próprio changelog. 
+            --pretty=format:'- %ad — %s (%h)' \ # % ad: Data do commit (Author Date),%s: A mensagem (título) do commit,%h: O hash curto do commit
+            --date=short > /tmp/changelog.txt # --date=short: Formata a data para um padrão curto e limpo (ex: AAAA-MM-DD). O operador > pega todo o resultado gerado pelo git log e salva em um arquivo de texto temporário
 
           echo "===== CHANGELOG ====="
-          cat /tmp/changelog.txt
+          cat /tmp/changelog.txt # Lê o arquivo que acabou de ser criado e joga o conteúdo dele na tela
 
       - name: Escrever o changelog no README.md
         run: |
-          python3 - <<'EOF'
-          import re
+          python3 - <<'EOF' # interpretador Python e executar diretamente o código que está logo abaixo,EOF (End of File) serve apenas para avisar onde o código Python termina.
+          import re #Importa a biblioteca padrão de Expressões Regulares (Regex) do Python,
 
-          start = "<!-- CHANGELOG:START -->"
-          end = "<!-- CHANGELOG:END -->"
+          start = "<!-- CHANGELOG:START -->"# cria onde vai iniciar
+          end = "<!-- CHANGELOG:END -->" # cria onde termina
 
-          with open("README.md", encoding="utf-8") as f:
+          with open("README.md", encoding="utf-8") as f: #Lê todo o conteúdo atual do README.md para dentro de uma variável em memória e também lê o arquivo temporário com a lista de commits que geramos no passo anterior (removendo espaços vazios extras com .strip()).
               readme = f.read()
           with open("/tmp/changelog.txt", encoding="utf-8") as f:
               changelog = f.read().strip()
 
-          block = start + "\n" + changelog + "\n" + end
-          pattern = re.compile(re.escape(start) + r".*?" + re.escape(end), re.DOTALL)
+          block = start + "\n" + changelog + "\n" + end #block: Junta a tag de início, o changelog novo no meio e a tag de fim.
+          pattern = re.compile(re.escape(start) + r".*?" + re.escape(end), re.DOTALL) #pattern: Cria uma regra de busca (Regex) que localiza tudo o que está entre o começo e o fim
 
           if not pattern.search(readme):
               raise SystemExit("Marcadores do changelog não encontrados no README.md")
