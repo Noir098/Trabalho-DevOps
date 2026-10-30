@@ -20,6 +20,10 @@ O workflow `release-package.yml` roda quando uma tag de versão (ex: `v1.0.0`) �
 ## Histórico de alterações
 
 <!-- CHANGELOG:START -->
+- 2026-10-29 — Fix formatting issues in changelog workflow (96a3059)
+- 2026-10-29 — Improve changelog generation script (ec98d6b)
+- 2026-10-29 — comentarios no changlog (4ff129e)
+- 2026-10-29 — fazendo comentários no changlog (640ec26)
 - 2026-10-24 — Delete CHANGELOG.md (c8a3a1a)
 - 2026-10-24 — Update changelog (8ff7efc)
 - 2026-10-24 — Delete CHANGELOG.md (1752607)
